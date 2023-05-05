@@ -37,9 +37,8 @@ Param(
 # Ensures that no login info is saved after the runbook is done
 Disable-AzContextAutosave
 
-# Log in as the service principal from the Runbook
-$connection = Get-AutomationConnection -Name AzureRunAsConnection
-Login-AzAccount -ServicePrincipal -Tenant $connection.TenantID -ApplicationId $connection.ApplicationID -CertificateThumbprint $connection.CertificateThumbprint
+# Log in as managed identity from the Runbook
+Connect-AzAccount -Identity
 
 # Create a state object and save it to the harddrive
 $state = New-ACMEState -Path $env:TEMP
@@ -52,7 +51,7 @@ Get-ACMEServiceDirectory $state -ServiceName $serviceName -PassThru;
 New-ACMENonce $state;
 
 # Create an account key. The state will make sure it's stored.
-New-ACMEAccountKey $state -PassThru;
+New-ACMEAccountKey $state -PassThru -Force;
 
 # Register the account key with the acme service. The account key will automatically be read from the state
 New-ACMEAccount $state -EmailAddresses $EmailAddress -AcceptTOS;
